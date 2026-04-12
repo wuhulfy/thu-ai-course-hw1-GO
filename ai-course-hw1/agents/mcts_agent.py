@@ -5,6 +5,8 @@ MCTS (蒙特卡洛树搜索) 智能体模板。
 参考：《深度学习与围棋》第 4 章
 """
 
+import math
+import random
 from dlgo.gotypes import Player, Point
 from dlgo.goboard import GameState, Move
 
@@ -26,7 +28,7 @@ class MCTSNode:
         prior: 先验概率（来自策略网络，可选）
     """
 
-    def __init__(self, game_state, parent=None, prior=1.0):
+    def __init__(self, game_state, parent=None, move=None, prior=1.0):
         self.game_state = game_state
         self.parent = parent
         self.children = []
@@ -34,12 +36,16 @@ class MCTSNode:
         self.value_sum = 0
         self.prior = prior
         # TODO: 初始化其他必要属性
+        self.unvisited_moves = [m for m in game_state.legal_moves() if not m.is_resign]
+        self.move = move
 
     @property
     def value(self):
         """计算平均价值 = value_sum / visit_count，防止除零。"""
         # TODO: 实现价值计算
-        pass
+        if self.visit_count == 0:
+            return 0
+        return self.value_sum / self.visit_count
 
     def is_leaf(self):
         """是否为叶节点（未展开）。"""
@@ -62,7 +68,23 @@ class MCTSNode:
             最佳子节点
         """
         # TODO: 实现 UCT 选择
-        pass
+        best_score = float('-inf')
+        best_node = None
+        for child in self.children:
+            if child.visit_count == 0:
+                # 赋予未访问节点极高的分数，鼓励探索
+                score = float('inf') 
+            else:
+                # 探索
+                exploration = c * math.sqrt(math.log(self.visit_count) / child.visit_count)
+                # 胜率
+                score = child.value + exploration
+                
+            if score > best_score:
+                best_score = score
+                best_node = child
+                
+        return best_node
 
     def expand(self):
         """
@@ -72,7 +94,15 @@ class MCTSNode:
             新创建的子节点（用于后续模拟）
         """
         # TODO: 实现节点展开
-        pass
+
+        idx = random.randrange(len(self.unvisited_moves))
+        move = self.unvisited_moves.pop(idx)
+        
+        next_state = self.game_state.apply_move(move)
+        
+        child_node = MCTSNode(next_state, parent=self, move=move)
+        self.children.append(child_node)
+        return child_node
 
     def backup(self, value):
         """
@@ -82,7 +112,10 @@ class MCTSNode:
             value: 从当前局面模拟得到的结果（1=胜，0=负，0.5=和）
         """
         # TODO: 实现反向传播
-        pass
+        self.visit_count += 1
+        self.value_sum += value
+        if self.parent is not None:
+            self.parent.backup(1.0 - value)
 
 
 class MCTSAgent:
@@ -118,7 +151,24 @@ class MCTSAgent:
             选定的棋步
         """
         # TODO: 实现 MCTS 主循环
-        pass
+        root = MCTSNode(game_state)
+        for _ in range(self.num_rounds):
+            # Selection
+            node = root
+            while not node.is_leaf() and not node.is_terminal():
+                node = node.best_child(c=self.temperature)
+
+            # Expansion
+            if not node.is_terminal():
+                node = node.expand()
+
+            # Simulation
+            value = self._simulate(node.game_state)
+
+            # Backup
+            node.backup(value)
+
+        return self._select_best_move(root)
 
     def _simulate(self, game_state):
         """
@@ -137,7 +187,31 @@ class MCTSAgent:
             从当前玩家视角的结果（1=胜, 0=负, 0.5=和）
         """
         # TODO: 实现快速模拟（含两种优化策略）
-        pass
+        current_state = game_state
+        rollout_player = game_state.next_player
+        max_depth = 30
+        depth = 0
+
+        while not current_state.is_over() and depth < max_depth:
+            legal_moves = [m for m in current_state.legal_moves() if not m.is_resign]
+            if not legal_moves:
+                move = Move.pass_turn()
+            else:                # 启发式走子：优先选有气、不自杀、提子的走法
+                play_moves = [m for m in legal_moves if m.is_play]
+                if play_moves:
+                    move = random.choice(play_moves)
+                else:
+                    move = random.choice(legal_moves)
+            current_state = current_state.apply_move(move)
+            depth += 1
+            
+        if current_state.is_over():
+            winner = current_state.winner()
+            if winner is None:
+                return 0.5
+            return 1.0 if winner == rollout_player else 0.0
+
+        return 0.5
 
     def _select_best_move(self, root):
         """
@@ -150,4 +224,12 @@ class MCTSAgent:
             最佳棋步
         """
         # TODO: 根据访问次数或价值选择
-        pass
+        best_move = None
+        best_visit_count = -1
+        for child in root.children:
+            if child.visit_count > best_visit_count:
+                best_visit_count = child.visit_count
+                best_move = child.move
+        if best_move is None:
+            return Move.pass_turn()
+        return best_move
