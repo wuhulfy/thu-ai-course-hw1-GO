@@ -242,6 +242,16 @@ class GoGUI:
             return
         if not self.history:
             return
+
+        human_count = int(self.black_type.get() == HUMAN) + int(self.white_type.get() == HUMAN)
+        undo_steps = 1
+        # 人vs机模式下，如果轮到人，撤销回到人落子前
+        if human_count == 1 and self._is_human_turn() and len(self.history) >= 2:
+            undo_steps = 2
+
+        if undo_steps == 2:
+            self.history.pop()  
+
         (
             self.game_state,
             self.move_count,
