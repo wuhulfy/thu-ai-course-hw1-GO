@@ -24,20 +24,20 @@ hw1/
 │   └── report.md		   # 报告源文件
 │
 ├── example/                       # 对弈示例
-│   ├── readme.md		 		   # 相关说明 后缀带1的是未进行优化的MCTS算法
+│   ├── readme.md		 		   # 相关说明 命名带1的是未进行优化的MCTS算法
 │   ├── human_vs_mcts1.mp4		   # 人对蒙特卡洛搜索
 │   ├── random_vs_mcts1.mp4		   # 随机对蒙特卡洛搜索
-│   ├── mcts_vs_minimax1.mp4	   # 蒙特卡洛搜索对minimax搜索
+│   ├── mcts_vs_minimax1.mp4	   # 蒙特卡洛搜索对Minimax搜索
 │   ├── mcts_vs_mcts1.mp4		   # 蒙特卡洛搜索对蒙特卡洛搜索
 │   ├── human_vs_random.mp4		   # 人对随机
 │   ├── human_vs_mcts.mp4		   # 人对蒙特卡洛搜索
-│   ├── human_vs_minimax.mp4	   # 人对minimax搜索
+│   ├── human_vs_minimax.mp4	   # 人对Minimax搜索
 │   ├── random_vs_random.mp4	   # 随机对随机
 │   ├── random_vs_mcts.mp4		   # 随机对蒙特卡洛搜索
-│   ├── random_vs_minimax.mp4	   # 随机对minimax搜索
-│   ├── mcts_vs_minimax.mp4		   # 蒙特卡洛搜索对minimax搜索
+│   ├── random_vs_minimax.mp4	   # 随机对Minimax搜索
+│   ├── mcts_vs_minimax.mp4		   # 蒙特卡洛搜索对Minimax搜索
 │   ├── mcts_vs_mcts.mp4		   # 蒙特卡洛搜索对蒙特卡洛搜索
-│   └── minimax_vs_minimax.mp4     # minimax搜索对minimax搜索
+│   └── minimax_vs_minimax.mp4     # Minimax搜索对Minimax搜索
 │
 ├── report.pdf		   	   # 报告
 ├── gui_tk.py			   # 图形化界面程序
