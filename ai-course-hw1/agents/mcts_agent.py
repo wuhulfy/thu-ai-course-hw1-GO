@@ -54,6 +54,10 @@ class MCTSNode:
     def is_terminal(self):
         """是否为终局节点。"""
         return self.game_state.is_over()
+    
+    def is_fully_expanded(self):
+        """所有合法动作是否都已展开。"""
+        return len(self.unvisited_moves) == 0
 
     def best_child(self, c=1.414):
         """
@@ -199,7 +203,36 @@ class MCTSAgent:
             else:                # 启发式走子：优先选有气、不自杀、提子的走法
                 play_moves = [m for m in legal_moves if m.is_play]
                 if play_moves:
-                    move = random.choice(play_moves)
+                    scored = []
+                    for m in play_moves:
+                        point = m.point
+                        score = 0
+                        for nb in point.neighbors():
+                            if not current_state.board.is_on_grid(nb):
+                                continue
+                            s = current_state.board.get_go_string(nb)
+                            if s is None:
+                                continue
+                            if s.color != current_state.next_player:
+                                if s.num_liberties == 1:
+                                    score += 1000   # 提子优先
+                                elif s.num_liberties == 2:
+                                    score += 80     # 打吃倾向
+                            else:
+                                if s.num_liberties == 1:
+                                    score += 300    # 救己方打吃
+                                else:
+                                    score += 10
+                            scored.append((score, m))
+
+                    scored.sort(key=lambda x: x[0], reverse=True)
+
+                    # 80% 选最优，20% 在前3里随机，保留探索倾向
+                    if random.random() < 0.8:
+                        move = scored[0][1]
+                    else:
+                        top_k = min(3, len(scored))
+                        move = random.choice([m for _, m in scored[:top_k]])
                 else:
                     move = random.choice(legal_moves)
             current_state = current_state.apply_move(move)
