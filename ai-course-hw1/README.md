@@ -39,6 +39,7 @@ hw1/
 │   ├── mcts_vs_mcts.mp4		   # 蒙特卡洛搜索对蒙特卡洛搜索
 │   └── minimax_vs_minimax.mp4     # minimax搜索对minimax搜索
 │
+├── report.pdf		   	   # 报告
 ├── gui_tk.py			   # 图形化界面程序
 ├── play.py                # 命令行对弈脚本
 └── README.md              # 本文件
