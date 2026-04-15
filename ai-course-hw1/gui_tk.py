@@ -30,6 +30,10 @@ class GoGUI:
         self.ai_running = False
         self.state_serial = 0
         self.game_state = GameState.new_game(BOARD_SIZE)
+        self.move_count = 0
+        self.black_captures = 0
+        self.white_captures = 0
+        self.history = []
 
         self._build_controls()
         self._build_board()
@@ -48,9 +52,12 @@ class GoGUI:
         tk.Button(top, text="New Game", command=self.new_game).pack(side=tk.LEFT, padx=6)
         tk.Button(top, text="Pass", command=self.human_pass).pack(side=tk.LEFT, padx=2)
         tk.Button(top, text="Resign", command=self.human_resign).pack(side=tk.LEFT, padx=2)
+        tk.Button(top, text="Undo", command=self.undo_move).pack(side=tk.LEFT, padx=2)
 
         self.info = tk.Label(self.root, text="")
         self.info.pack()
+        self.stats = tk.Label(self.root, text="")
+        self.stats.pack()
 
     def _build_board(self):
         w = MARGIN * 2 + GRID * (BOARD_SIZE - 1)
@@ -63,6 +70,10 @@ class GoGUI:
         self.ai_running = False
         self.state_serial += 1
         self.game_state = GameState.new_game(BOARD_SIZE)
+        self.move_count = 0
+        self.black_captures = 0
+        self.white_captures = 0
+        self.history = []
         self.draw()
         self._maybe_run_ai()
 
@@ -86,10 +97,34 @@ class GoGUI:
     def _apply_move(self, move):
         if not self.game_state.is_valid_move(move):
             return False
+        self.history.append(
+            (self.game_state, self.move_count, self.black_captures, self.white_captures)
+        )
+        player = self.game_state.next_player
+        black_before, white_before = self._count_stones(self.game_state.board)
         self.game_state = self.game_state.apply_move(move)
+        self.move_count += 1
+        if move.is_play:
+            black_after, white_after = self._count_stones(self.game_state.board)
+            if player == Player.black:
+                self.black_captures += max(0, white_before - white_after)
+            else:
+                self.white_captures += max(0, black_before - black_after)
         self.state_serial += 1
         self.draw()
         return True
+
+    def _count_stones(self, board):
+        black = 0
+        white = 0
+        for r in range(1, board.num_rows + 1):
+            for c in range(1, board.num_cols + 1):
+                stone = board.get(Point(r, c))
+                if stone == Player.black:
+                    black += 1
+                elif stone == Player.white:
+                    white += 1
+        return black, white
 
     def _run_one_ai_move_async(self):
         if self.game_state.is_over() or self._is_human_turn() or self.ai_running:
@@ -168,6 +203,13 @@ class GoGUI:
             role = self._current_player_type()
             self.info.config(text=f"{side} to move ({role})")
 
+        self.stats.config(
+            text=(
+                f"Move: {self.move_count} | "
+                f"Captures - Black: {self.black_captures}, White: {self.white_captures}"
+            )
+        )
+
     def on_click(self, event):
         if self.game_state.is_over() or not self._is_human_turn():
             return
@@ -193,6 +235,21 @@ class GoGUI:
         if self.game_state.is_over() or not self._is_human_turn():
             return
         self._apply_move(Move.resign())
+        self._maybe_run_ai()
+
+    def undo_move(self):
+        if self.ai_running:
+            return
+        if not self.history:
+            return
+        (
+            self.game_state,
+            self.move_count,
+            self.black_captures,
+            self.white_captures,
+        ) = self.history.pop()
+        self.state_serial += 1
+        self.draw()
         self._maybe_run_ai()
 
 
