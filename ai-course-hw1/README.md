@@ -21,8 +21,7 @@ hw1/
 │   └── minimax_agent.py   # 第三小问：Minimax AI（选做）
 │
 ├── report/                # 报告pdf及其md源文件
-│   ├── report.md		   # 报告源文件
-│   └── report.pdf		   # 报告pdf文件
+│   └── report.md		       # 报告md源文件
 │
 ├── example/                       # 对弈示例
 │   ├── human_vs_random.mp4		   # 人对随机
