@@ -40,7 +40,7 @@ class RandomAgent:
         # 提示：使用 random.choice() 随机选择
         legal_moves = game_state.legal_moves()
         if not legal_moves:
-            # 如果没有合法棋步，必须停一手
+            # 如果没有合法棋步，停一手
             return Move.pass_turn()
         return random.choice(legal_moves)
 

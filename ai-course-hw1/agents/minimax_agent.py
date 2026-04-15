@@ -27,7 +27,7 @@ class MinimaxAgent:
         self.max_depth = max_depth
         # 默认评估函数（TODO：学生可替换为神经网络）
         self.evaluator = evaluator or self._default_evaluator
-        self.root_player = None  # 搜索根节点的玩家
+        self.tt = GameResultCache()   # 每次根搜索重置
 
     def select_move(self, game_state: GameState) -> Move:
         """
@@ -44,7 +44,7 @@ class MinimaxAgent:
         best_score = -float('inf')
         alpha = -float('inf')
         beta = float('inf')
-
+        self.tt = GameResultCache()  # 每次根搜索重置缓存
         self.root_player = game_state.next_player
 
         for move in self._get_ordered_moves(game_state):
@@ -122,26 +122,49 @@ class MinimaxAgent:
         # - 最小化方：如果 value <= alpha 则剪枝
         if depth == 0 or game_state.is_over():
             return self.evaluator(game_state)
+        
+        alpha_orig, beta_orig = alpha, beta
+        key = (game_state.next_player, game_state.board.zobrist_hash())
+        cached = self.tt.get(key)
+        if cached is not None:
+            cached_depth, cached_value, flag = cached
+            if cached_depth >= depth:
+                if flag == 'exact':
+                    return cached_value
+                elif flag == 'lower':
+                    alpha = max(alpha, cached_value)
+                elif flag == 'upper':
+                    beta = min(beta, cached_value)
+                if alpha >= beta:
+                    return cached_value
+
         if maximizing_player:
             max_eval = -float('inf')
             for move in self._get_ordered_moves(game_state):
                 next_state = game_state.apply_move(move)
                 eval_val = self.alphabeta(next_state, depth - 1, alpha, beta, False)
                 max_eval = max(max_eval, eval_val)
-                alpha = max(alpha, eval_val)
+                value = max(alpha, eval_val)
                 if beta <= alpha:
                     break  # Beta 剪枝
-            return max_eval
         else:
             min_eval = float('inf')
             for move in self._get_ordered_moves(game_state):
                 next_state = game_state.apply_move(move)
                 eval_val = self.alphabeta(next_state, depth - 1, alpha, beta, True)
                 min_eval = min(min_eval, eval_val)
-                beta = min(beta, eval_val)
+                value = min(beta, eval_val)
                 if beta <= alpha:
                     break  # Alpha 剪枝
-            return min_eval
+        if value <= alpha_orig:
+            flag = 'upper'
+        elif value >= beta_orig:
+            flag = 'lower'
+        else:
+            flag = 'exact'
+        self.tt.put(key, depth, value, flag)
+
+        return value
 
     def _default_evaluator(self, game_state):
         """

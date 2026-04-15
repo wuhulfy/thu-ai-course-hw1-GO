@@ -193,7 +193,7 @@ class MCTSAgent:
         # TODO: 实现快速模拟（含两种优化策略）
         current_state = game_state
         rollout_player = game_state.next_player
-        max_depth = 30
+        max_depth = 50
         depth = 0
 
         while not current_state.is_over() and depth < max_depth:
