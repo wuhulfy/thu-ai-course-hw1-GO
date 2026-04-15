@@ -21,10 +21,14 @@ hw1/
 │   └── minimax_agent.py   # 第三小问：Minimax AI（选做）
 │
 ├── report/                # 报告pdf及其md源文件
-│   ├── report.md		   # 报告源文件
-│   └── report.pdf		   # 报告pdf文件
+│   └── report.md		   # 报告源文件
 │
 ├── example/                       # 对弈示例
+│   ├── readme.md		 		   # 相关说明 后缀带1的是未进行优化的MCTS算法
+│   ├── human_vs_mcts1.mp4		   # 人对蒙特卡洛搜索
+│   ├── random_vs_mcts1.mp4		   # 随机对蒙特卡洛搜索
+│   ├── mcts_vs_minimax1.mp4	   # 蒙特卡洛搜索对minimax搜索
+│   ├── mcts_vs_mcts1.mp4		   # 蒙特卡洛搜索对蒙特卡洛搜索
 │   ├── human_vs_random.mp4		   # 人对随机
 │   ├── human_vs_mcts.mp4		   # 人对蒙特卡洛搜索
 │   ├── human_vs_minimax.mp4	   # 人对minimax搜索
@@ -33,11 +37,10 @@ hw1/
 │   ├── random_vs_minimax.mp4	   # 随机对minimax搜索
 │   ├── mcts_vs_minimax.mp4		   # 蒙特卡洛搜索对minimax搜索
 │   ├── mcts_vs_mcts.mp4		   # 蒙特卡洛搜索对蒙特卡洛搜索
-│   └── minimax_vs_minimax.mp4     # minimax搜索对minimax洛搜索
+│   └── minimax_vs_minimax.mp4     # minimax搜索对minimax搜索
 │
 ├── gui_tk.py			   # 图形化界面程序
 ├── play.py                # 命令行对弈脚本
-├── report.pdf		       # 报告pdf文件
 └── README.md              # 本文件
 ```
 
